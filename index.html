@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061325">
+<title>SWITCH BEAT — Prototype 0.1</title>
+<style>
+:root{--bg:#06101f;--panel:#0e2138;--blue:#39d7fc;--green:#5ef2b0;--text:#edf9ff;--dim:#91aac0;--gold:#f9ca74}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#030b18;color:var(--text);font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif;touch-action:manipulation}
+body{display:flex;justify-content:center}#app{position:relative;display:flex;flex-direction:column;width:100%;max-width:460px;height:100dvh;min-height:570px;overflow:hidden;background:radial-gradient(ellipse at 48% 44%,#113152 0%,#07182c 50%,#030b19 100%);border-left:1px solid #25354a;border-right:1px solid #25354a}
+#app:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(#79b2e209 1px,transparent 1px),linear-gradient(90deg,#79b2e209 1px,transparent 1px);background-size:30px 30px;mask-image:linear-gradient(transparent 7%,#000 48%,transparent 88%)}
+header{z-index:1;padding:12px 18px 8px;display:flex;justify-content:space-between;align-items:start;gap:8px}
+.logo{font-size:23px;font-weight:1000;font-style:italic;letter-spacing:-1.1px;line-height:1;color:#e4faff;text-shadow:0 0 18px #38a9fa5e}.logo span{color:#4ce2ff}.tiny{font-size:10px;letter-spacing:1.8px;color:#91b4d2;margin-top:5px}.hud{text-align:right;font-size:11px;color:#a8cce1}.hud strong{display:block;font-size:19px;letter-spacing:2px;color:#fff;font-variant-numeric:tabular-nums}
+.status{z-index:1;padding:3px 18px 0;min-height:57px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center}
+#message{font-size:14px;font-weight:800;color:#e8f8ff;line-height:1.3}#submessage{font-size:11px;color:#9ebbd1}
+#network{z-index:1;flex:1;min-height:0;width:100%;display:block;overflow:visible}
+.cablebase{stroke:#274e75;stroke-width:13;stroke-linecap:round;fill:none}.cablecore{stroke:#6acef9;stroke-opacity:.62;stroke-width:3;stroke-linecap:round;fill:none;stroke-dasharray:8 10}
+.port{cursor:pointer;outline:0}.port .portbase{fill:#102742;stroke:#527fa4;stroke-width:3}.port.learned .portbase{stroke:#3fcbad;fill:#123d48}.port:active .portbase,.port.pressed .portbase{stroke:#fff;fill:#245b80}.portlabel{font-weight:900;font-size:18px;fill:#f4faff;text-anchor:middle}.learnedlabel{fill:#72ffd1;font-size:12px;font-weight:800;text-anchor:middle}.unknownlabel{fill:#89a5bb;font-size:9px;text-anchor:middle}
+#switchBtn{cursor:pointer;outline:none}#switchHousing{fill:#0c2a47;stroke:#5ebde8;stroke-width:4;filter:drop-shadow(0 0 10px #279ee96b)}.switchTitle{fill:#9fcbe6;font-size:13px;letter-spacing:1px;text-anchor:middle;font-weight:900}.switchInstruction{fill:#b2c9d7;font-size:9px;text-anchor:middle}
+#packetText{fill:white;font-weight:900;font-size:27px;text-anchor:middle;letter-spacing:1px}#packetSource{fill:#93b3d4;font-size:11px;text-anchor:middle}
+#signal{filter:drop-shadow(0 0 13px #4af4ff) drop-shadow(0 0 5px #62e9ff);pointer-events:none}
+#outburst{pointer-events:none;opacity:0}.outGlow{stroke:#52f5ba;stroke-width:9;stroke-linecap:round;filter:drop-shadow(0 0 6px #65ffe5)}
+.learnPing{filter:drop-shadow(0 0 5px #51f6bb);animation:learn .6s ease-out 1}@keyframes learn{0%{opacity:.15;transform:scale(.75)}40%{opacity:1;transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
+#lastResult{position:absolute;z-index:3;left:50%;top:44%;transform:translate(-50%,-50%);white-space:nowrap;font-weight:1000;font-size:26px;letter-spacing:1.2px;text-shadow:0 2px 17px #001;opacity:0;pointer-events:none}
+footer{z-index:1;padding:0 18px calc(12px + env(safe-area-inset-bottom));height:100px;flex-shrink:0} .beathead{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:2px;color:#78dafd;font-weight:900}
+#beatline{height:28px;display:grid;grid-template-columns:repeat(8,1fr);align-items:center;gap:4px;margin:3px 0 2px;position:relative}#beatline:before{content:"";position:absolute;z-index:-1;left:2%;right:2%;top:50%;height:2px;background:#3c6b8a}.beat{border-radius:50%;width:12px;height:12px;background:#224764;border:1px solid #6789a3;margin:auto;transition:background .07s,transform .07s,box-shadow .07s}.beat.active{background:#6fe7fd;border:1px solid white;transform:scale(1.6);box-shadow:0 0 15px #47d5ff}
+#progress{height:3px;background:#163852;border-radius:10px;overflow:hidden;margin-top:5px}#progressFill{height:100%;width:0;background:linear-gradient(90deg,#4dd1ff,#61ffc1)}
+#footnote{font-size:10px;text-align:center;color:#719bb9;margin-top:6px}
+.overlay{position:absolute;inset:0;z-index:5;background:#031021dc;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px)}.overlay[hidden]{display:none}.dialog{width:100%;background:linear-gradient(150deg,#133457,#0b1c31);border:1px solid #4985ad;border-radius:18px;padding:24px 20px;box-shadow:0 24px 90px #020a1699;text-align:center}.dialog h1{font-style:italic;font-size:30px;letter-spacing:-1px;margin:0 0 8px}.dialog h1 span{color:#4bdfff}.dialog h2{font-size:20px;margin:8px 0}.dialog p{font-size:14px;line-height:1.7;color:#bdd7e9;margin:14px auto;max-width:300px}.dialog .sm{font-size:12px}.button{appearance:none;background:#4ad6f6;color:#032238;border:0;border-radius:12px;font:inherit;font-weight:900;font-size:17px;padding:14px 28px;width:100%;margin-top:8px;cursor:pointer;box-shadow:0 5px 24px #26c4f35a}.button:active{transform:scale(.98)}.pill{display:inline-flex;font-size:11px;border:1px solid #5baac9;border-radius:30px;padding:5px 10px;color:#a7e2fa;letter-spacing:1px}
+@media(max-height:680px){header{padding-top:8px}.status{min-height:45px}footer{height:82px}.dialog{padding:16px}.dialog p{margin:8px auto}}
+</style>
+</head>
+<body>
+<div id="app">
+<header><div><div class="logo">SWITCH <span>BEAT</span></div><div class="tiny">L2 SWITCH / PROTOTYPE 0.1</div></div><div class="hud">STAGE 01 <strong id="score">00000</strong><span id="combo">0 COMBO</span></div></header>
+<div class="status"><div id="message">信号の光を追いかけよう</div><div id="submessage">ケーブル上を進み、中央に届く拍でタップ</div></div>
+<svg id="network" viewBox="0 0 360 530" preserveAspectRatio="xMidYMid meet" role="img" aria-label="中央のスイッチと4方向のポート。ケーブルを光が走る">
+<defs><radialGradient id="sigGrad"><stop offset="0" stop-color="#fff"/><stop offset=".36" stop-color="#b5ffff"/><stop offset="1" stop-color="#20c7f7" stop-opacity=".15"/></radialGradient></defs>
+<g class="wires">
+<path class="cablebase" d="M180 96 V226"/><path class="cablecore" d="M180 96 V226"/>
+<path class="cablebase" d="M65 297 H121"/><path class="cablecore" d="M65 297 H121"/>
+<path class="cablebase" d="M239 297 H295"/><path class="cablecore" d="M239 297 H295"/>
+<path class="cablebase" d="M180 367 V450"/><path class="cablecore" d="M180 367 V450"/>
+</g>
+<g id="port-U" class="port" data-port="U" tabindex="0" role="button" aria-label="上ポートU"><circle class="portbase" cx="180" cy="65" r="38"/><text class="portlabel" x="180" y="70">U</text><text id="learn-U" class="unknownlabel" x="180" y="119">·</text><circle cx="180" cy="65" r="45" fill="transparent"/></g>
+<g id="port-P1" class="port" data-port="P1" tabindex="0" role="button" aria-label="左ポートP1"><circle class="portbase" cx="65" cy="297" r="39"/><text class="portlabel" x="65" y="302">P1</text><text id="learn-P1" class="unknownlabel" x="65" y="354">·</text><circle cx="65" cy="297" r="45" fill="transparent"/></g>
+<g id="port-P2" class="port" data-port="P2" tabindex="0" role="button" aria-label="右ポートP2"><circle class="portbase" cx="295" cy="297" r="39"/><text class="portlabel" x="295" y="302">P2</text><text id="learn-P2" class="unknownlabel" x="295" y="354">·</text><circle cx="295" cy="297" r="45" fill="transparent"/></g>
+<g id="port-P3" class="port" data-port="P3" tabindex="0" role="button" aria-label="下ポートP3"><circle class="portbase" cx="180" cy="480" r="38"/><text class="portlabel" x="180" y="485">P3</text><text id="learn-P3" class="unknownlabel" x="180" y="523">·</text><circle cx="180" cy="480" r="45" fill="transparent"/></g>
+<g id="switchBtn" tabindex="0" role="button" aria-label="中央スイッチ、フラッディング"><rect id="switchHousing" x="121" y="226" width="118" height="141" rx="17"/><text class="switchTitle" x="180" y="248">SWITCH</text><rect x="132" y="258" width="96" height="71" rx="7" fill="#071b32" stroke="#386a95"/><text id="packetSource" x="180" y="276">FROM U</text><text id="packetText" x="180" y="307">A → B</text><text class="switchInstruction" x="180" y="352">中央タップ = FLOOD</text><rect x="116" y="222" width="128" height="150" rx="18" fill="transparent"/></g>
+<g id="outburst"><path class="outGlow" id="beam-U" d="M180 226 V96"/><path class="outGlow" id="beam-P1" d="M121 297 H65"/><path class="outGlow" id="beam-P2" d="M239 297 H295"/><path class="outGlow" id="beam-P3" d="M180 367 V450"/></g>
+<g id="signal"><circle id="signalHalo" cx="0" cy="0" r="17" fill="url(#sigGrad)"/><circle id="signalDot" cx="0" cy="0" r="6.5" fill="#e5ffff" stroke="#2dd9ff" stroke-width="2"/></g>
+</svg>
+<div id="lastResult" aria-live="polite"></div>
+<footer><div class="beathead"><span>BEAT / 100 BPM</span><span id="eventCount">0 / 8 FRAMES</span></div><div id="beatline"></div><div id="progress"><div id="progressFill"></div></div><div id="footnote">画面のポートを直接タップ。別の操作パネルはありません。</div></footer>
+<div id="overlay" class="overlay"><div class="dialog"><div class="pill">FIRST PLAYABLE TEST</div><h1>SWITCH <span>BEAT</span></h1><p><strong>届く光に合わせて、正しいポートをタップ！</strong></p><p class="sm">最初はBの場所が不明 → <b>中央</b>をタップしてFLOOD。<br>Bから返信が届いたら、スイッチが位置を自動で覚えます。<br>次に同じA→Bが来たら……？</p><p class="sm">光が中央に届くタイミングでタップ。<br>受信元は自動学習。<b>「FILTER」は何も押さない休符。</b><br>最初の試作なので判定は少し甘めです。</p><button class="button" id="start">▶ タップしてスタート</button></div></div>
+</div>
+<script>
+(() => {
+'use strict';
+// Stage data: source port and Ethernet source/destination MAC shorthand.
+const events=[
+ {ingress:'U',src:'A',dst:'B'},
+ {ingress:'P2',src:'B',dst:'A'},
+ {ingress:'U',src:'A',dst:'B'},
+ {ingress:'P3',src:'C',dst:'A'},
+ {ingress:'U',src:'A',dst:'C'},
+ {ingress:'U',src:'A',dst:'D'},
+ {ingress:'P2',src:'X',dst:'B'},
+ {ingress:'U',src:'A',dst:'B'}
+];
+const positions={U:[180,96],P1:[65,297],P2:[295,297],P3:[180,450]};
+const ends={U:[180,226],P1:[121,297],P2:[239,297],P3:[180,367]};
+const portNames=['U','P1','P2','P3'];
+const beatSec=.60, frameSpan=4*beatSec, travel=2*beatSec, firstJudgement=2*beatSec, hitWindow=.34;
+const $=id=>document.getElementById(id);
+const beatline=$('beatline');for(let i=0;i<8;i++){let n=document.createElement('div');n.className='beat';beatline.appendChild(n)}
+const beatElems=Array.from(beatline.children);
+let audio=null,startTime=0,played=false,finished=false,entries=[],learned={},score=0,combo=0,raf=0,timer=0,nextClick=0,activeFrame=-1,lastBeat=-1,muted=false;
+function setText(a,b){$('message').textContent=a;$('submessage').textContent=b}
+function audioTone(f,d=.08,vol=.1,type='sine',at=audio?.currentTime){if(!audio||muted)return;let o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,at);g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol,at+.008);g.gain.exponentialRampToValueAtTime(.0001,at+d);o.connect(g);g.connect(audio.destination);o.start(at);o.stop(at+d+.01)}
+function clickBeat(t,n){audioTone(n%4===0?235:380,.047,n%4===0?.10:.04,'triangle',t)}
+function showResult(t,color){let el=$('lastResult');el.textContent=t;el.style.color=color;el.style.opacity='1';clearTimeout(timer);timer=setTimeout(()=>{el.style.opacity='0'},520)}
+function updateHud(){ $('score').textContent=String(score).padStart(5,'0');$('combo').textContent=combo+' COMBO' }
+function updateLearned(){for(const p of portNames){let names=Object.keys(learned).filter(k=>learned[k]===p);let el=$('learn-'+p);el.textContent=names.join(' · ')||'—';el.setAttribute('class',names.length?'learnedlabel':'unknownlabel');$('port-'+p).classList.toggle('learned',names.length>0);if(names.length){el.classList.remove('learnPing');void el.getBoundingClientRect();el.classList.add('learnPing')}}}
+function decision(ev){learned[ev.src]=ev.ingress;const exit=learned[ev.dst];if(exit===ev.ingress)return 'FILTER';return exit||'FLOOD'}
+function activate(i){const s=entries[i];if(s.activated)return;s.activated=true;activeFrame=i;
+  // The complete valid frame is now received. Learn its source, then look up destination.
+  s.expect=decision(s.ev);updateLearned();$('packetText').textContent=s.ev.src+' → '+s.ev.dst;$('packetSource').textContent='FROM '+s.ev.ingress;
+  if(s.expect==='FILTER')setText('休符！ 転送しない','宛先が受信ポートと同じ側。何も押さない。');
+  else setText('転送するポートをタップ！',s.expect==='FLOOD'?'宛先は未学習：中央スイッチをタップ':'宛先の記号が表示されたポートをタップ');
+}
+function emit(ports){const o=$('outburst');const names=Array.isArray(ports)?ports:[ports];for(let p of portNames)$('beam-'+p).style.opacity=names.includes(p)?'1':'0';o.style.opacity='1';o.animate([{opacity:1},{opacity:0}],{duration:350,easing:'ease-out'}).onfinish=()=>{o.style.opacity=0}}
+function judge(s,answer,automatic=false){if(s.done)return;s.done=true;s.answer=answer;const ok=answer===s.expect;
+ if(ok){const dt=Math.abs(audio.currentTime-s.judgeAt);const perfect=automatic||dt<.14; if(s.expect!=='FILTER'){score+=perfect?200:100;combo++;showResult(perfect?'PERFECT!':'GOOD!', '#75f8ce');let beams=s.expect==='FLOOD'?portNames.filter(p=>p!==s.ev.ingress):[s.expect];emit(beams);audioTone(660,.14,.12,'triangle');setTimeout(()=>audioTone(990,.14,.085,'sine'),60)}else{showResult('NICE REST!', '#86cff5');audioTone(510,.09,.08)}setText(s.expect==='FILTER'?'FILTER：転送せずに終了':s.expect==='FLOOD'?'FLOOD：複数ポートへ転送':'UNICAST：'+s.expect+'へ転送','次のフレームが来る！');
+ }else{combo=0;showResult(automatic?'MISS':'WRONG PORT', '#ffaeaa');audioTone(160,.16,.09,'sawtooth');setText('ミス！ 正解：'+s.expect,'MAC学習は受信に応じて進むので、ゲームは続きます')}
+ updateHud();$('eventCount').textContent=entries.filter(e=>e.done).length+' / '+events.length+' FRAMES'
+}
+function tap(port){if(!played||finished||!audio)return;const now=audio.currentTime;const s=entries.find(e=>e.activated&&!e.done&&now-e.judgeAt>=-hitWindow&&now-e.judgeAt<=hitWindow);
+ if(!s){showResult('まだ！','#fbd68e');return}
+ if(s.expect==='FILTER'){judge(s,port);return}
+ judge(s,port);
+}
+for(const p of portNames){const el=$('port-'+p);el.addEventListener('pointerdown',e=>{e.preventDefault();tap(p)});el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tap(p)}})}
+$('switchBtn').addEventListener('pointerdown',e=>{e.preventDefault();tap('FLOOD')});$('switchBtn').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tap('FLOOD')}});
+function animate(){if(!played||!audio)return;const now=audio.currentTime;const elapsed=now-startTime;
+ // NOTE: the pulse travels from port to switch during the 2-beat anticipation window.
+ for(let i=0;i<entries.length;i++){let s=entries[i];if(!s.activated&&now>=s.judgeAt)activate(i);if(s.activated&&!s.done&&now>s.judgeAt+hitWindow)judge(s,s.expect==='FILTER'?'FILTER':'MISS',true)}
+ const preview=entries.find(s=>now>=s.judgeAt-travel&&now<=s.judgeAt);
+ if(preview){let pos=positions[preview.ev.ingress];let end=ends[preview.ev.ingress];let p=Math.max(0,Math.min(1,1-(preview.judgeAt-now)/travel));p=p*p*(3-2*p);const x=pos[0]+(end[0]-pos[0])*p;const y=pos[1]+(end[1]-pos[1])*p;$('signal').style.opacity='1';$('signal').setAttribute('transform',`translate(${x},${y})`);$('packetText').textContent=preview.ev.src+' → '+preview.ev.dst;$('packetSource').textContent='FROM '+preview.ev.ingress;
+ if(!preview.activated&&(!entries[activeFrame]||entries[activeFrame].done)){setText('信号がケーブルを伝ってくる','宛先を見て、次の拍でどこへ転送するか考えよう')}
+ }else $('signal').style.opacity='0';
+ const beat=Math.floor(Math.max(0,elapsed)/beatSec);if(beat!==lastBeat){lastBeat=beat;beatElems.forEach((el,i)=>el.classList.toggle('active',i===beat%8))}
+ $('progressFill').style.width=Math.min(100,Math.max(0,elapsed/(frameSpan*events.length)*100))+'%';
+ if(now>entries[entries.length-1].judgeAt+1.0){endGame();return}raf=requestAnimationFrame(animate);
+}
+function endGame(){played=false;finished=true;cancelAnimationFrame(raf);const ok=entries.filter(e=>e.answer===e.expect).length;const dialog=$('overlay');dialog.hidden=false;dialog.querySelector('.pill').textContent='PROTOTYPE 0.1 / RESULT';dialog.querySelector('h1').innerHTML='STAGE <span>CLEAR</span>';dialog.querySelector('p').innerHTML=`<strong>${ok} / ${events.length} フレーム成功</strong><br>スコア ${score} 点`;dialog.querySelectorAll('p')[1].innerHTML='最初のA→Bはフラッディング。<br>Bから返信が届いて学習すると、次のA→BはP2だけへ転送できる。';dialog.querySelectorAll('p')[2].textContent='これがL2スイッチの「送信元学習 → 宛先転送」です。';$('start').textContent='↻ もう一度遊ぶ';}
+async function start(){if(audio){await audio.close().catch(()=>{});}audio=new (window.AudioContext||window.webkitAudioContext)();await audio.resume();$('overlay').hidden=true;learned={};score=0;combo=0;lastBeat=-1;activeFrame=-1;updateHud();updateLearned();finished=false;played=true;startTime=audio.currentTime+.5;entries=events.map((ev,i)=>({ev,judgeAt:startTime+firstJudgement+i*frameSpan,activated:false,done:false,expect:null,answer:null}));$('eventCount').textContent='0 / '+events.length+' FRAMES';setText('まもなくスタート！','光が中央に着く拍で、ネットワークを直接タップ');
+ // Schedule sound ahead to keep a stable beat rather than timing with animation frames.
+ nextClick=0;function schedule(){if(!played||!audio)return;while(startTime+nextClick*beatSec<audio.currentTime+.18&&nextClick<events.length*4+5){let t=startTime+nextClick*beatSec;if(t>=audio.currentTime)clickBeat(t,nextClick);nextClick++}setTimeout(schedule,33)}schedule();raf=requestAnimationFrame(animate)
+}
+$('start').addEventListener('click',start);
+})();
+</script>
+</body>
+</html>
